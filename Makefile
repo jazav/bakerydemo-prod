@@ -2,12 +2,13 @@ PROD_COMPOSE_FILE ?= docker-compose
 # Project variables
 PROJECT_NAME ?= bakerydemo
 ORG_NAME ?= lemma
-REPO_NAME ?= bakerydemo
+REPO_NAME ?= alexzolotarev
 # Use these settings to specify a custom Docker registry
 DOCKER_REGISTRY ?= docker.io
+VERSION ?= 0.1.0
 
 APP_SERVICE_NAME ?= django
-APP_NAME ?= $(PROJECT_NAME)_$(APP_SERVICE_NAME)
+APP_NAME ?= $(REPO_NAME)/$(PROJECT_NAME)_$(APP_SERVICE_NAME):$(VERSION)
 
 VERSION ?= 0.1.0
 
@@ -21,6 +22,7 @@ rm_all:
 rm_vol:
 	@ docker volume prune --force
 load:
+	#alexzolotarev/bakerydemo_django:0.1.0
 	@# docker-compose -f $(COMPOSE_FILE).yml run app /venv/bin/python manage.py load_initial_data
 	@ docker exec $(APP_NAME)_1 /venv/bin/python ./manage.py load_initial_data
 del_renditions:
