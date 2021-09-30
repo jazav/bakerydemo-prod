@@ -1,0 +1,90 @@
+version: '3.9'
+services:
+  postgres:
+    image: bitnami/postgresql:13
+    restart: always
+    environment:
+      POSTGRESQL_DATABASE: ${POSTGRES_DB}
+      POSTGRESQL_USERNAME: ${POSTGRES_USER}
+      POSTGRESQL_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRESQL_POSTGRES_PASSWORD: ${POSTGRESQL_POSTGRES_PASSWORD}
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 20s
+      timeout: 30s
+      retries: 5
+    networks:
+      - app_network
+    expose:
+      - "5432"
+    tty: true
+    volumes:
+      - ./postgres-data:/bitnami/postgresql
+  django:
+    image: alexzolotarev/bakerydemo_django:0.1.0
+    restart: on-failure
+    environment:
+      DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      APP_NAME: ${APP_NAME}
+      VIRTUAL_PROTO: uwsgi
+      #ENABLE_ACME: 'true'
+      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY}
+    networks:
+      - app_network
+    volumes:
+      - media-root:/code/${APP_NAME}/media/images
+      - ./original_images:/code/${APP_NAME}/media/original_images
+      # we need it to get static files (css,js)
+      - web-root:/code/${APP_NAME}
+      - ./log/uwsgi:/var/log/uwsgi
+    #      - tmp:/tmp
+    expose:
+      - "3031"
+    logging:
+      options:
+        max-file: "5"
+        max-size: "5m"
+  nginx:
+    image: nginx
+    restart: on-failure
+    environment:
+      NGINX_ENVSUBST_TEMPLATE_DIR: /etc/nginx/templates
+      NGINX_ENVSUBST_TEMPLATE_SUFFIX: .template
+      NGINX_ENVSUBST_OUTPUT_DIR: /etc/nginx/conf.d
+      APP_NAME: ${APP_NAME}
+      APP_URL: ${APP_URL}
+    healthcheck:
+      test: [ "CMD", "service", "nginx", "status" ]
+      interval: 20s
+      timeout: 10s
+      retries: 3
+    networks:
+      - app_network
+    ports:
+      - "80:8080"
+    logging:
+      options:
+        max-file: "5"
+        max-size: "5m"
+    volumes:
+      - ./app-nginx.conf.template:/etc/nginx/templates/app-nginx.conf.template
+      - media-root:/code/${APP_NAME}/media/images
+      # we need it to get static files (images)
+      - web-root:/code/${APP_NAME}
+      - ./log/nginx:/var/log/nginx/
+## we need it to unix sock only
+##      - tmp:/tmp:ro
+volumes:
+  web-root:
+    driver: local
+  media-root:
+  postgres-data:
+  log:
+    driver: local
+#  tmp:
+#    driver: local
+networks:
+  app_network:
+
+
+

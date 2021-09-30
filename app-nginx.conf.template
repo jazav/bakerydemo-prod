@@ -1,0 +1,295 @@
+# default.conf
+# <-- START FROM nginx/poxy -->
+client_max_body_size 4096M;
+proxy_connect_timeout 300;
+proxy_send_timeout 300;
+proxy_read_timeout 300;
+send_timeout 300;
+# If we receive X-Forwarded-Proto, pass it through; otherwise, pass along the
+# scheme used to connect to this server
+map $http_x_forwarded_proto $proxy_x_forwarded_proto {
+    default $http_x_forwarded_proto;
+''
+    $scheme;
+}
+# If we receive X-Forwarded-Port, pass it through; otherwise, pass along the
+# server port the client connected to
+map $http_x_forwarded_port $proxy_x_forwarded_port {
+    default $http_x_forwarded_port;
+''
+    $server_port;
+}
+# If we receive Upgrade, set Connection to "upgrade"; otherwise, delete any
+# Connection header that may have been passed to this server
+map $http_upgrade $proxy_connection {
+    default upgrade;
+''
+    close;
+}
+# Apply fix for very long server names
+server_names_hash_bucket_size 128;
+# Default dhparam
+ssl_dhparam /etc/nginx/dhparam/dhparam.pem;
+# Set appropriate X-Forwarded-Ssl header
+map $scheme $proxy_x_forwarded_ssl {
+    default off;
+    https on;
+}
+gzip_types text/plain text/css application/javascript application/json application/x-javascript text/xml application/xml application/xml+rss text/javascript;
+
+access_log off;
+resolver 127.0.0.1;
+# HTTP 1.1 support
+proxy_http_version 1.1;
+proxy_buffering off;
+
+# START https://gist.github.com/denji/8359866
+## you must set worker processes based on your CPU cores, nginx does not benefit from setting more than that
+##some last versions calculate it automatically
+#worker_processes auto;
+#
+## number of file descriptors used for nginx
+## the limit for the maximum FDs on the server is usually set by the OS.
+## if you don't set FD's then OS settings will be used which is by default 2000
+#worker_rlimit_nofile 100000;
+#
+#
+## provides the configuration file context in which the directives that affect connection processing are specified.
+#events {
+#    # determines how much clients will be served per worker
+#    # max clients = worker_connections * worker_processes
+#    # max clients is also limited by the number of socket connections available on the system (~64k)
+#    worker_connections 4000;
+#
+#    # optimized to serve many clients with each thread, essential for linux -- for testing environment
+#    use epoll;
+#
+#    # accept as many connections as possible, may flood worker connections if set too low -- for testing environment
+#    multi_accept on;
+#}
+
+# NGINX Simple DDoS Defense >
+
+# limit the number of connections per single IP
+limit_conn_zone $binary_remote_addr zone=conn_limit_per_ip:10m;
+
+# limit the number of requests for a given session: average 5 requests per second
+# https://nginx.org/en/docs/http/ngx_http_limit_req_module.html
+limit_req_zone $binary_remote_addr zone=req_limit_per_ip:10m rate=10r/s;
+# NGINX Simple DDoS Defense >
+# END https://gist.github.com/denji/8359866
+
+# pass the Host: header from the client right along so redirects
+# can be set properly within the Rack application
+proxy_set_header Host $http_host;
+proxy_set_header Upgrade $http_upgrade;
+proxy_set_header Connection $proxy_connection;
+
+# enable this if and only if you use HTTPS, this helps Rack
+# set the proper protocol for doing redirects:
+proxy_set_header X-Forwarded-Proto $proxy_x_forwarded_proto;
+proxy_set_header X-Forwarded-Ssl $proxy_x_forwarded_ssl;
+proxy_set_header X-Forwarded-Port $proxy_x_forwarded_port;
+# Mitigate httpoxy attack (see README for details)
+proxy_set_header ../../not-used/proxy "";
+
+log_format vcombined_fmt '$host:$server_port '
+'$remote_addr - $remote_user [$time_local] '
+'"$request" $status $body_bytes_sent '
+'"$http_referer" "$http_user_agent"';
+
+log_format vhost_fmt '$host $remote_addr - $remote_user [$time_local] '
+'"$request" $status $body_bytes_sent '
+'"$http_referer" "$http_user_agent"';
+
+log_format compression_fmt '$remote_addr - $remote_user [$time_local] '
+'"$request" $status $body_bytes_sent '
+'"$http_referer" "$http_user_agent" "$gzip_ratio"';
+
+server {
+    server_name _; # This is just an invalid value which will never trigger on a real hostname.
+    listen 80;
+    access_log /var/log/nginx/access.log vhost_fmt;
+    return 503;
+}
+# <-- END -->
+
+# Set cache dir
+#https://www.nginx.com/blog/maximizing-python-performance-with-nginx-parti-web-serving-and-caching/
+#proxy_cache_path /tmp/cache keys_zone=cache:10m levels=1:2 inactive=600s max_size=100m;
+
+#https://tghw.com/blog/microcaching-for-a-faster-site
+#proxy_cache_path /var/cache/nginx levels=1:2 keys_zone=microcache:5m max_size=1000m;
+
+#My sets:
+proxy_cache_path /var/cache/nginx levels=1:2 keys_zone=microcache:5m inactive=600s max_size=1000m;
+
+map $status $loggable {
+    ~^[23] 0;
+    default 1;
+}
+
+map $status $should_log {
+    404 1;
+    default 0;
+}
+
+
+# the upstream uWSGI application server
+upstream uwsgi_server {
+    #
+    # unix socket
+    #
+
+    # fail_timeout=0 means we always retry an upstream even if it failed
+    # to return a good HTTP response (in case the Unicorn master nukes a
+    # single worker for timing out).
+
+    #server unix:///tmp/uwsgi.sock fail_timeout=0;
+    #
+    # if you are using TCP sockets:
+    #
+
+    server django:3031;
+}
+# configuration of the server
+#server {
+#    listen      8080;
+#    server_name ${APP_URL};
+#    return      301 http://www.${APP_URL}$request_uri;
+#}
+
+server {
+    server_name www.${APP_URL};
+    listen 8080;
+
+    charset utf-8;
+    client_max_body_size 4G;
+    # NGINX Simple DDoS Defense https://gist.github.com/denji/8359866 >
+    # zone which we want to limit by upper values, we want limit whole server
+    limit_conn conn_limit_per_ip 10;
+    limit_req zone=req_limit_per_ip burst=50 nodelay;
+    # if the request body size is more than the buffer size, then the entire (or partial)
+    # request body is written into a temporary file
+    client_body_buffer_size  128k;
+    # buffer size for reading client request header -- for testing environment
+    client_header_buffer_size 3m;
+    # maximum number and size of buffers for large headers to read from client request
+    large_client_header_buffers 4 256k;
+    # read timeout for the request body from client -- for testing environment
+    client_body_timeout   3m;
+    # how long to wait for the client to send a request header -- for testing environment
+    client_header_timeout 3m;
+    # NGINX Simple DDoS Defense >
+
+    gzip on;
+
+#    https://highload.today/logi-error_log-i-access_log-v-nginx/
+#Исключает запросы к HTTP со статусом 2ХХ (успешно) и 3ХХ (редирект)
+#    The log format uses the default combined; the specified log cache size is 32k; gzip is enabled
+#    for compression prior to log writing, with a compression ratio of 1; and the cache data is valid for 1 minute.
+# for DEBUG
+#    access_log /var/log/nginx/access.log vcombined_fmt;
+#    error_log /var/log/nginx/error.log info;
+
+    access_log /var/log/nginx/access.log vcombined_fmt buffer=32k flush=30s if=$loggable;
+    error_log /var/log/nginx/error.log crit;
+
+
+    #    access_log /dev/stdout vcombined memory:32m info;
+    #    error_log /dev/stdout memory:32m info;
+
+    location /static/ {
+        expires max;
+        log_not_found off;
+        access_log off;
+        alias /code/${APP_NAME}/collect_static/;
+    }
+
+    location /media/ {
+        expires max;
+        log_not_found off;
+        access_log off;
+        alias /code/${APP_NAME}/media/;
+    }
+    # Error pages
+    error_page 500 502 503 504 /500.html;
+    location = /500.html {
+        expires max;
+        log_not_found off;
+        access_log off;
+        root /code/${APP_NAME}/collect_static/;
+    }
+
+    #    location ~* .(ogg|ogv|svg|svgz|eot|otf|woff|mp4|ttf|css|rss|atom|js|jpg|jpeg|gif|png|ico|zip|tgz|gz|rar|bz2|doc|xls|exe|ppt|tar|mid|midi|wav|bmp|rtf)$ {
+    #        expires max;
+    #        log_not_found off;
+    #        access_log off;
+    #        alias /code/${APP_NAME}/collect_static/;
+    #    }
+#   protect admin locations
+#    location ~ ^/(admin|django-admin)/{
+#            limit_req zone=req_limit_per_ip burst=5 nodelay;
+#        }
+
+    location / {
+        # Setup var defaults
+        set $no_cache "";
+        # If non GET/HEAD, don't cache & mark user as uncacheable for 1 second via cookie
+        if ($request_method !~ ^(GET|HEAD)$) {
+            set $no_cache "1";
+        }
+        # Drop no cache cookie if need be
+        # (for some reason, add_header fails if included in prior if-block)
+        if ($no_cache = "1") {
+            add_header Set-Cookie "_mcnc=1; Max-Age=2; Path=/";
+            add_header X-Microcachable "0";
+        }
+        # Bypass cache if no-cache cookie is set
+        if ($http_cookie ~* "_mcnc") {
+            set $no_cache "1";
+        }
+
+        # Bypass cache if flag is set
+        proxy_no_cache $no_cache;
+        proxy_cache_bypass $no_cache;
+
+        # Set cache zone
+        proxy_cache microcache;
+        # Set cache key to include identifying components
+        proxy_cache_key $scheme$host$request_method$request_uri;
+        # Only cache valid HTTP 200 responses for 1 second
+        proxy_cache_valid 200 1s;
+        # Serve from cache if currently refreshing
+        proxy_cache_use_stale updating;
+        # Send appropriate headers through
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        # Set files larger than 1M to stream rather than cache
+        proxy_max_temp_file_size 1M;
+
+        # we don't want nginx trying to do something clever with
+        # redirects, we set the Host: header above already.
+        proxy_redirect off;
+
+        # Try to serve static files from nginx, no point in making an
+        # *application* server like Unicorn/Rainbows! serve static files.
+        #        if (!-f $request_filename) {
+        #            proxy_pass http://wsgi_server;
+
+        #            break;
+        #        }
+        # Send all other requests to the uWSGI application server using uwsgi wire protocol
+        # theae params must be equal uWsgi: harakiri = 30
+        proxy_read_timeout 30s;
+        proxy_send_timeout 30s;
+        include     /etc/nginx/uwsgi_params;
+        uwsgi_pass uwsgi://uwsgi_server;
+
+        # https://docs.nginx.com/nginx/admin-guide/web-server/app-gateway-uwsgi-django/?_ga=2.142520368.381084465.1628541854-1471180224.1625218973
+        uwsgi_param Host $host;
+        uwsgi_param X-Real-IP $remote_addr;
+        uwsgi_param X-Forwarded-For $proxy_add_x_forwarded_for;
+        uwsgi_param X-Forwarded-Proto $http_x_forwarded_proto;
+    }
+}
