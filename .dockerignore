@@ -1,0 +1,14 @@
+not-used/Dockerfile.nginx
+Makefile.*
+docker/dev/docker-compose.yml
+Procfile
+Vagrantfile
+log
+pgadmin-config
+redis-data
+elasticsearch-data
+postgres-data
+not-used
+**/*.egg-info
+bakerydemo/media
+bakerydemo/collect_static

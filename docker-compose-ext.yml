@@ -1,0 +1,101 @@
+version: '3.9'
+services:
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL?err}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD?err}
+      PGADMIN_CONFIG_SERVER_MODE: 'True'
+      PGADMIN_LISTEN_PORT: ${PGADMIN_PORT?err}
+      #PGADMIN_SERVER_JSON_FILE: servers.json
+      # Application log level - one of:
+      # CRITICAL 50, ERROR 40, WARNING 30, SQL 25, INFO 20, DEBUG 10, NOTSET 0
+      PGADMIN_CONFIG_CONSOLE_LOG_LEVEL: 50
+      PGADMIN_CONFIG_FILE_LOG_LEVEL: 10
+      CONSOLE_LOG_FORMAT: '%(asctime)s: %(levelname)s\t%(name)s:\t%(message)s'
+      FILE_LOG_FORMAT: '%(asctime)s: %(levelname)s\t%(name)s:\t%(message)s'
+      PGADMIN_CONFIG_ENHANCED_COOKIE_PROTECTION: 'True'
+      #PGADMIN_ENABLE_TLS: 'True'
+      LOG_FILE: '/var/log/pgadmin/pgadmin4.log'
+    networks:
+      - app_network
+    ports:
+      - "${PGADMIN_PORT?err}:${PGADMIN_PORT?err}"
+    expose:
+      - "${PGADMIN_PORT?err}"
+    volumes:
+      - ./config/pgadmin/servers.json:/pgadmin4/servers.json
+#      - ./config/pgadmin/.pgpass:/var/lib/pgadmin/storage/pgadmin4_pgadmin.org/.pgpass
+      - ./data/pgadmin:/var/lib/pgadmin/storage
+      - ./log/pgadmin:/var/log/pgadmin/
+  redis:
+    image: bitnami/redis
+    restart: always
+    secrets:
+      - redis-password
+    environment:
+#      ALLOW_EMPTY_PASSWORD: "yes"
+      REDIS_PASSWORD_FILE: /run/secrets/redis-password
+      REDIS_DISABLE_COMMANDS: FLUSHDB,FLUSHALL,CONFIG
+      REDIS_PORT_NUMBER: ${REDIS_PORT?err}
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 20s
+      timeout: 10s
+      retries: 10
+    volumes:
+      - ./data/redis:/bitnami/redis/data
+    networks:
+      - app_network
+    expose:
+      - "${REDIS_PORT?err}"
+  elasticsearch:
+    #image: elasticsearch:6.8.16
+    #image: elasticsearch:7.14.0
+    image: bitnami/elasticsearch:6
+    restart: always
+    environment:
+      ELASTICSEARCH_PORT_NUMBER: ${ELASTICSEARCH_PORT?err}
+      BITNAMI_DEBUG: "false"
+      ELASTICSEARCH_CLUSTER_NAME: ${APP_NAME?err}-elastic-cluster
+      ELASTICSEARCH_HEAP_SIZE: 1024m
+      ES_JAVA_OPTS: "-Xms2g -Xmx2g -Des.enforce.bootstrap.checks=true"
+    #    ulimits:
+    #      memlock:
+    #        soft: -2
+    #        hard: -2
+    #    mem_limit: 2g
+    healthcheck:
+      test: [ "CMD", "curl","-s" ,"-f", "-u", "elasticsearch", "http://elasticsearch:9200/_cat/health" ]
+      interval: 20s
+      timeout: 10s
+      retries: 5
+    volumes:
+      # for vanilla
+#      - ./data/elasticsearch:/usr/share/elasticsearch/data
+#     for bitnami
+      - ./data/elasticsearch:/bitnami/elasticsearch/data
+    networks:
+      - app_network
+    expose:
+      - "${ELASTICSEARCH_PORT?err}"
+  django:
+    secrets:
+      - redis-password
+    environment:
+#      CACHE_URL is defined in docker-entrypoint.sh, it is using in settings/production.py
+#      CACHE_URL: redis://default:${REDIS_PASSWORD?err}@redis:6379
+      REDIS_PORT_NUMBER: ${REDIS_PORT?err}
+      REDIS_PASSWORD_FILE: /run/secrets/redis-password
+      ELASTICSEARCH_ENDPOINT: elasticsearch
+  nginx:
+    environment:
+      PGADMIN_PORT: ${PGADMIN_PORT?err}
+volumes:
+  data:
+secrets:
+  redis-password:
+    file: secrets/redis_password.txt
+networks:
+  app_network:
