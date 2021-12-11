@@ -57,6 +57,8 @@ git_clone:
 
 git_update:
 	@ git pull origin master
+	@ sudo chmod -R 777 bakerydemo_prod
+
 
 stack_rm:
 	@ docker stack rm bakerydemo
