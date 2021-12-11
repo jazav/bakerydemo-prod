@@ -128,7 +128,7 @@ services:
         condition: on-failure
     volumes:
       - media-root:/code/${APP_NAME}/media/images
-      - ../../${APP_NAME?err}/media/original_images:/code/${APP_NAME?err}/media/original_images
+      - ./${APP_NAME?err}/media/original_images:/code/${APP_NAME?err}/media/original_images
       - ./config/uwsgi.ini:/code/uwsgi.ini
       # we need it to get static files (css,js)
       - web-root:/code/${APP_NAME?err}
