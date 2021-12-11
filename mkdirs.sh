@@ -15,7 +15,7 @@ fi
 if [ ! -d log/postgresql ]; then
   mkdir -p log/postgresql;
 fi
-echo >&2 "Log is created"
+echo >&2 "Log...is created"
 
 # Creating Data Structure
 if [ ! -d data ]; then
@@ -34,7 +34,7 @@ fi
 if [ ! -d data/uwsgi ]; then
   mkdir -p data/uwsgi;
 fi
-echo >&2 "Data is created"
+echo >&2 "Data..is created"
 
 # Creating Media Structure
 if [ ! -d media ]; then
@@ -45,4 +45,4 @@ fi
 if [ ! -d bakerydemo/media/original_images ]; then
   mkdir -p bakerydemo/media/original_images;
 fi
-echo >&2 "Media is created"
+echo >&2 "Media.is created"
