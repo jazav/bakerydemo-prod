@@ -42,7 +42,7 @@ if [ ! -d media ]; then
   sudo chmod -R 777 media;
 fi
 
-if [ ! -d bakerydemo/media/original_images ]; then
-  mkdir -p bakerydemo/media/original_images;
+if [ ! -d media/original_images ]; then
+  mkdir -p media/original_images;
 fi
 echo >&2 "Media.is created"
