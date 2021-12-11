@@ -2,9 +2,7 @@ version: '3.9'
 
 services:
   postgresql:
-    #    image: postgres:13.3
     image: bitnami/postgresql:14
-    #    restart: always not appropriate for swarm
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U postgres" ]
       interval: 20s
@@ -13,35 +11,20 @@ services:
     secrets:
       - dbuser-password
       - postgres-password
-    #    configs:
-    #      - source: config-yml
-    #        target: /configs/config.yml
-    #        uid: '103'
-    #        gid: '103'
-    #        mode: 0440
     networks:
       - app_network
     environment:
-      #      * for vanilla
-      #      POSTGRES_DB: ${POSTGRES_DB}
-      #      POSTGRES_USER: ${POSTGRES_USER}
-      #      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      #      * for bitnami
       POSTGRESQL_USERNAME: ${POSTGRES_USER?err}
       POSTGRESQL_PASSWORD_FILE: /run/secrets/dbuser-password
       POSTGRESQL_DATABASE: ${POSTGRES_DB?err}
       POSTGRESQL_POSTGRES_PASSWORD_FILE: /run/secrets/postgres-password
       POSTGRESQL_LOG_LINE_PREFIX: '%t [%p]: [%l-1] '
-      #      '%t [%p]: [ %l-1 ] user=%u,db=%d '
-      #      '%t [%p]: [ %l-1 ] user=%u,db=%d,remote=%r '
       POSTGRESQL_LOG_TIMEZONE: ${TIME_ZONE}
       TZ: ${TIME_ZONE}
       LANG: 'en_US.UTF-8'
       LANGUAGE: 'en_US:en'
     expose:
       - "${POSTGRES_PORT?err}"
-    # publish this port for test env only using PyCharm
-    # WE MUST comment it in production
     ports:
       - "${POSTGRES_PORT?err}:${POSTGRES_PORT?err}"
     tty: true
@@ -49,34 +32,13 @@ services:
       replicas: 1
       placement:
         max_replicas_per_node: 1
-#        constraints:
-#          - "node.labels.purpose==database"
-      #      resources:
-      #        limits:
-      #          cpus: '0.50'
-      #          memory: 50M
-      #        reservations:
-      #          cpus: '0.25'
-      #          memory: 20M
       restart_policy:
         condition: on-failure
     volumes:
-      #  path to vanilla postgres
-      #      - ./postgresql-data:/var/lib/postgresql/data
-      #  path to bitnami postgres
       - ./data/postgresql:/bitnami/postgresql
       - ./log/postgresql:/opt/bitnami/postgresql/logs
-  #      - ../../postgresql-conf/:/bitnami/postgresql/conf
   django:
-    #   * for Dev
-#    build:
-#      args:
-#        PROJECT_ARG: ${APP_NAME}
-#      context: ../../
-#      dockerfile: docker/all-in-one/Dockerfile
-    #    * for Prod (Swarm)
     image: alexzolotarev/bakerydemodjango:0.1.0
-    #    restart: on-failure not appropriate for swarm
     secrets:
       - dbuser-password
       - django-secret
@@ -93,21 +55,9 @@ services:
       DBUSER_PASSWORD_FILE: /run/secrets/dbuser-password
       POSTGRES_DB: ${POSTGRES_DB?err}
       POSTGRES_PORT: ${POSTGRES_PORT?err}
-      #      DATABASE_URL is defined in docker-entrypoint.sh, it is using in settings/production.py
-      #      DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgresql:${POSTGRES_PORT}/${POSTGRES_DB}
-      #      CACHE_URL: redis://default:${REDIS_PASSWORD}@redis:6379
-      #      ELASTICSEARCH_ENDPOINT: elasticsearch
       APP_NAME: ${APP_NAME?err}
-      #      VIRTUAL_PORT: ${NGINX_UWSGI_PORT?err}
-      #      # for proxy
-      #      VIRTUAL_HOST: ${APP_NAME}
-      # uwsgi, http or https - https://hub.docker.com/r/nginxproxy/nginx-proxy
       VIRTUAL_PROTO: uwsgi
-      #ENABLE_ACME: 'true'
-      #      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY?err}
       DJANGO_SECRET_KEY: /run/secrets/django-secret
-      #      DJANGO_LOG_LEVEL: "DEBUG"
-      #     this TZ has to be the same as one in Django's settings
       TZ: ${TIME_ZONE}
       DJANGO_DOCKER_PORT: ${DJANGO_DOCKER_PORT?err}
       NGINX_UWSGI_PORT: ${NGINX_UWSGI_PORT?err}
@@ -115,23 +65,13 @@ services:
       replicas: 0
       placement:
         max_replicas_per_node: 1
-#        constraints:
-#          - "node.labels.purpose==web"
-      #      resources:
-      #        limits:
-      #          cpus: '0.50'
-      #          memory: 50M
-      #        reservations:
-      #          cpus: '0.25'
-      #          memory: 20M
       restart_policy:
         condition: on-failure
     volumes:
       - media-root:/code/${APP_NAME}/media/images
-      - ./${APP_NAME?err}/media/original_images:/code/${APP_NAME?err}/media/original_images
-      - ./config/uwsgi.ini:/code/uwsgi.ini
-      # we need it to get static files (css,js)
       - web-root:/code/${APP_NAME?err}
+      - ./media/original_images:/code/${APP_NAME?err}/media/original_images
+      - ./config/uwsgi.ini:/code/uwsgi.ini
       - ./log/uwsgi:/var/log/uwsgi
     #      - tmp:/tmp
     expose:
@@ -146,7 +86,6 @@ services:
     command: [ "/venv/bin/uwsgi", "--strict", "--show-config", "./uwsgi.ini" ]
   nginx:
     image: nginx
-#    restart: on-failure
     environment:
       NGINX_ENVSUBST_TEMPLATE_DIR: /etc/nginx/templates
       NGINX_ENVSUBST_TEMPLATE_SUFFIX: .template
@@ -175,7 +114,6 @@ services:
       - ./config/app-nginx.conf.template:/etc/nginx/templates/app-nginx.conf.template
       - ./secrets/swarm.htpasswd:/etc/nginx/conf.d/swarm.htpasswd
       - media-root:/code/${APP_NAME}/media/images
-      # we need it to get static files (images)
       - web-root:/code/${APP_NAME}
       - ./log/nginx:/var/log/nginx/
     # we need it uncomment to unix sock only
@@ -184,15 +122,6 @@ services:
       replicas: 0
       placement:
         max_replicas_per_node: 1
-#        constraints:
-#          - "node.labels.purpose==web"
-      #      resources:
-      #        limits:
-      #          cpus: '0.50'
-      #          memory: 50M
-      #        reservations:
-      #          cpus: '0.25'
-      #          memory: 20M
       restart_policy:
         condition: on-failure
 volumes:
@@ -212,9 +141,6 @@ secrets:
   django-secret:
     file: secrets/django_secret.txt
 #    openssl rand -base64 40 | docker secret create django-secret -
-#    external: true
-#configs:
-#  config-yml:
 #    external: true
 networks:
   app_network:

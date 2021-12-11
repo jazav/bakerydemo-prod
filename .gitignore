@@ -17,3 +17,6 @@ __pycache__
 /.vagrant/
 /Vagrantfile.local
 !.gitignore
+log
+data
+media

@@ -16,12 +16,11 @@ label_show:
 stack_deploy:
 	@ docker stack deploy --compose-file docker-compose.yml -c docker-compose-viz.yml bakerydemo
 
-stack_deploy_ext:
-	@ docker stack deploy --compose-file docker-compose.yml -c docker-compose-viz.yml -c docker-compose-ext.yml bakerydemo
-
 stack_rm:
 	@ docker stack rm bakerydemo
 
+stack_errors:
+	@ docker stack ps --no-trunc bakerydemo
 visualizer_run:
 #https://github.com/dockersamples/docker-swarm-visualizer
 	@ docker service create --name=viz --publish=8080:8080/tcp --constraint=node.role==manager
@@ -31,3 +30,8 @@ swarm_init:
 	@docker swarm init
 swarm_leave:
 	@ docker swarm leave --force
+
+docker_start:
+	@ sudo systemctl start docker
+	@ sudo chmod 666 /var/run/docker.sock
+
