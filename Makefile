@@ -13,19 +13,13 @@ label_show:
 #	@ docker node ls -q | xargs docker node inspect \
 # 	-f '{{ .ID }} [{{ .Description.Hostname }}]: {{ range $k, $v := .Spec.Labels }}{{ $k }}={{ $v }} {{end}}'
 
-stack_admin_deploy:
-	@ docker stack deploy --compose-file docker-compose-viz.yml admin
+stack_deploy:
+	@ docker stack deploy --compose-file docker-compose.yml -c docker-compose-viz.yml bakerydemo
 
-stack_admin_rm:
-	@ docker stack rm admin
-
-stack_bakerydemo_deploy:
-	@ docker stack deploy --compose-file docker-compose.yml bakerydemo
-
-stack_bakerydemo_rm:
+stack_rm:
 	@ docker stack rm bakerydemo
 
-stack_bakerydemo_errors:
+stack_errors:
 	@ docker stack ps --no-trunc bakerydemo
 
 visualizer_run:
@@ -35,6 +29,7 @@ visualizer_run:
 
 swarm_init:
 	@docker swarm init
+
 swarm_leave:
 	@ docker swarm leave --force
 
