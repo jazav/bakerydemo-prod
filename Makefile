@@ -46,5 +46,6 @@ git_clone:
 	@ git clone https://github.com/jazav/bakerydemo_prod.git
 	@ sudo chmod -R 777 bakerydemo_prod
 
+#123
 git_update:
 	@ git pull origin master
