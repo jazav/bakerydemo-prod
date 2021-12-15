@@ -1,13 +1,13 @@
+action:
 args = `arg="$(filter-out $@,$(MAKECMDGOALS))" && echo $${arg:-${1}}`
 
 label_add_db:
 	@ docker node update --label-add purpose=database $(call args)
+	@# docker node update --label-add purpose=database docker-desktop
 label_add_web:
 	@ docker node update --label-add purpose=web $(call args)
-
 label_rm:
 	@ docker node update --label-rm purpose $(call args)
-
 label_show:
 	@ docker node ls -q | xargs docker node inspect -f '{{ .ID }} [{{ .Description.Hostname }}]: {{ .Spec.Labels }}'
 #	@ docker node ls -q | xargs docker node inspect \
@@ -18,7 +18,7 @@ stack_admin_deploy:
 
 stack_admin_rm:
 	@ docker stack rm admin
-	
+
 stack_bakerydemo_deploy:
 	@ docker stack deploy --compose-file docker-compose.yml bakerydemo
 
@@ -48,3 +48,4 @@ git_clone:
 
 git_update:
 	@ git pull origin master
+
