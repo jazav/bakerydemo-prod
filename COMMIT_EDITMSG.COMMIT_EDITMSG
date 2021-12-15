@@ -1,7 +1,57 @@
-New Message 2 is here
+c2,3
 
 # New Message
 # --------------
 # Please enter the commit message for your changes. Everything below
 # this paragraph is ignored, and an empty message aborts the commit.
 # Just close the window to accept your message.
+diff --git a/COMMIT_EDITMSG.COMMIT_EDITMSG b/COMMIT_EDITMSG.COMMIT_EDITMSG
+index c4f36e4..8f58bae 100644
+--- a/COMMIT_EDITMSG.COMMIT_EDITMSG
++++ b/COMMIT_EDITMSG.COMMIT_EDITMSG
+@@ -1,7 +1,32 @@
+-New Message 2 is here
++New Message 3
+ 
+ # New Message
+ # --------------
+ # Please enter the commit message for your changes. Everything below
+ # this paragraph is ignored, and an empty message aborts the commit.
+ # Just close the window to accept your message.
++diff --git a/COMMIT_EDITMSG.COMMIT_EDITMSG b/COMMIT_EDITMSG.COMMIT_EDITMSG
++new file mode 100644
++index 0000000..c4f36e4
++--- /dev/null
+++++ b/COMMIT_EDITMSG.COMMIT_EDITMSG
++@@ -0,0 +1,7 @@
+++New Message 2 is here
+++
+++# New Message
+++# --------------
+++# Please enter the commit message for your changes. Everything below
+++# this paragraph is ignored, and an empty message aborts the commit.
+++# Just close the window to accept your message.
++diff --git a/Makefile b/Makefile
++index 2f01d98..eea90f5 100644
++--- a/Makefile
+++++ b/Makefile
++@@ -46,6 +46,6 @@ git_clone:
++ 	@ git clone https://github.com/jazav/bakerydemo_prod.git
++ 	@ sudo chmod -R 777 bakerydemo_prod
++ 
++-#123
+++#1234
++ git_update:
++ 	@ git pull origin master
+\ No newline at end of file
+diff --git a/Makefile b/Makefile
+index eea90f5..7bfc443 100644
+--- a/Makefile
++++ b/Makefile
+@@ -46,6 +46,5 @@ git_clone:
+ 	@ git clone https://github.com/jazav/bakerydemo_prod.git
+ 	@ sudo chmod -R 777 bakerydemo_prod
+ 
+-#1234
+ git_update:
+ 	@ git pull origin master
