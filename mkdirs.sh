@@ -72,4 +72,4 @@ if [ ! -d media/original_images ]; then
   mkdir -p media/original_images;
   sudo chmod -R 777 media/original_images;
 fi
-echo >&2 "*media...is created"
+echo >&2 "* media...is created"
