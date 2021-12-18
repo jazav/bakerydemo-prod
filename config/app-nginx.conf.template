@@ -255,8 +255,6 @@ server {
         proxy_pass http://pgadmin:${PGADMIN_PORT}/;
         proxy_redirect off;
         port_in_redirect off;
-        rewrite ^([^.]*[^/])$ $1/ permanent;
-
     }
 
 # TO-DO: Using external authication
@@ -319,7 +317,6 @@ server {
         proxy_pass http://visualizer:${VISUALIZER_HOST_PORT}/;
         proxy_redirect off;
         port_in_redirect off;
-        rewrite ^([^.]*[^/])$ $1/ permanent;
     }
 
     location / {
