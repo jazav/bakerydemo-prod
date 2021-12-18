@@ -65,7 +65,8 @@ services:
       DJANGO_DOCKER_PORT: ${DJANGO_DOCKER_PORT?err}
       NGINX_UWSGI_PORT: ${NGINX_UWSGI_PORT?err}
     depends_on:
-      - postgresql
+      postgresql:
+        condition: service_healthy
     deploy:
       replicas: 0
       placement:
@@ -127,7 +128,8 @@ services:
     # we need it uncomment to unix sock only
     ##      - tmp:/tmp:ro
     depends_on:
-      - django
+      django:
+        condition: service_healthy
     deploy:
       replicas: 0
       placement:

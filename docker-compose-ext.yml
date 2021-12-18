@@ -53,8 +53,6 @@ services:
       interval: 20s
       timeout: 10s
       retries: 10
-    depends_on:
-      - postgresql
     tty: true
     deploy:
       replicas: 1
@@ -103,8 +101,6 @@ services:
       interval: 20s
       timeout: 10s
       retries: 5
-    depends_on:
-      - postgresql
     tty: true
     deploy:
       replicas: 1
