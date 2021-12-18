@@ -103,6 +103,7 @@ services:
       NGINX_HOST_PORT: ${NGINX_HOST_PORT?err}
       NGINX_DOCKER_PORT: ${NGINX_DOCKER_PORT?err}
       VISUALIZER_HOST_PORT: ${VISUALIZER_HOST_PORT?err}
+      PGADMIN_PORT: ${PGADMIN_PORT?err}
       TZ: ${TIME_ZONE}
     healthcheck:
       test: [ "CMD", "service", "nginx", "status" ]

@@ -12,7 +12,6 @@ label_show:
 	@ docker node ls -q | xargs docker node inspect -f '{{ .ID }} [{{ .Description.Hostname }}]: {{ .Spec.Labels }}'
 #	@ docker node ls -q | xargs docker node inspect \
 # 	-f '{{ .ID }} [{{ .Description.Hostname }}]: {{ range $k, $v := .Spec.Labels }}{{ $k }}={{ $v }} {{end}}'
-
 stack_deploy:
 	@ docker stack deploy --compose-file docker-compose.yml -c docker-compose-viz.yml bakerydemo
 
