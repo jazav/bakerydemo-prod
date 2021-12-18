@@ -244,20 +244,59 @@ server {
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Port ${NGINX_HOST_PORT};
 
-        set $targetIP pgadmin;
-        set $targetPort ${PGADMIN_PORT};
-        set $proxyurl $scheme://$targetIP:$targetPort/;
+# TO_DO: It doesn't work for some reason
+#        set $targetIP pgadmin;
+#        set $targetPort ${PGADMIN_PORT};
+#        set $proxyurl $scheme://$targetIP:$targetPort/;
+#        proxy_pass $proxyurl;
 
         # prevent Nginx from crashing if the upstream service doesn't start
         resolver 127.0.0.1 valid=30s;
-        proxy_pass $proxyurl;
+        proxy_pass http://pgadmin:${PGADMIN_PORT}/;
         proxy_redirect off;
     }
 
+# TO-DO: Using external authication
+
+#  location /auth {
+#    internal;
+#    set $proxyurl_auth http://auth:3000;
+#    proxy_pass $proxyurl_auth;
+#    proxy_pass_request_body off;
+#    proxy_set_header Content-Length "";
+#    proxy_set_header X-Original-URI $request_uri;
+#    break;
+#  }
+#
+#  location / {
+#    auth_request /auth;
+#    auth_request_set $auth_status $upstream_status;
+#    proxy_set_header Host $host;
+#    proxy_set_header X-Real-IP $remote_addr;
+#    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for
+#    proxy_set_header X-Forwarded-Proto $scheme;
+#    set $proxyurl http://api-server:3000;
+#    proxy_pass $proxyurl;
+#    proxy_read_timeout 90;
+#  }
+
+#    location ~* /pass/(.*) { <- regex capture for your variable
+#        auth_request /auth;  <- location to process request
+#        auth_request_set $proxyurl http://localhost:$upstream_http_x_port/pass/; <- set $proxyurl using value returned in x-port header of your php script
+#        add_header x-my-variable $1; <- Pass variable from regex capture to auth location
+#        proxy_pass $proxyurl;
+#    }
+
+#    location /auth {
+#        internal; <- make location only accessible to internal requests from Nginx
+#        proxy_set_header x-my-variable $http_x_my_variable; <- pass variable to php
+#        proxy_pass_request_body off; <- No point sending body to php
+#        proxy_set_header Content-Length "";
+#        proxy_pass http://your-php-script/file.php;
+#    }
     location /swarmadmin/ {
         proxy_set_header X-Script-Name /swarmadmin;
         proxy_set_header Host $host;
-#        proxy_set_header Host $http_host;
 
         # Send appropriate headers through
         proxy_set_header X-Forwarded-Proto $scheme;
@@ -268,16 +307,16 @@ server {
         auth_basic "Restricted";
         auth_basic_user_file /etc/nginx/conf.d/swarm.htpasswd;
 
-        set $targetIP visualizer;
-        set $targetPort ${VISUALIZER_HOST_PORT};
+#        set $targetIP visualizer;
+#        set $targetPort ${VISUALIZER_HOST_PORT};
 #        set $proxyurl $scheme://$targetIP:$targetPort/;
-        set $proxyurl http://$targetIP:$targetPort/;
 
         # prevent Nginx from crashing if the upstream service doesn't start
         resolver 127.0.0.1 valid=30s;
-        proxy_pass $proxyurl;
+        proxy_pass http://visualizer:${VISUALIZER_HOST_PORT}/;
         proxy_redirect off;
     }
+
     location / {
         # Setup var defaults
         set $no_cache "";
