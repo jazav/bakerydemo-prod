@@ -270,7 +270,8 @@ server {
 
         set $targetIP visualizer;
         set $targetPort ${VISUALIZER_HOST_PORT};
-        set $proxyurl $scheme://$targetIP:$targetPort/;
+#        set $proxyurl $scheme://$targetIP:$targetPort/;
+        set $proxyurl http://$targetIP:$targetPort/;
 
         # prevent Nginx from crashing if the upstream service doesn't start
         resolver 127.0.0.1 valid=30s;
