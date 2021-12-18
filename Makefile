@@ -15,7 +15,7 @@ label_show:
 stack_deploy:
 	@ docker stack deploy --compose-file docker-compose.yml -c docker-compose-viz.yml bakerydemo
 
-stack_deploy:
+stack_ext_deploy:
 	@ docker stack deploy --compose-file docker-compose.yml -c docker-compose-viz.yml -c docker-compose-ext.yml bakerydemo
 
 stack_rm:
