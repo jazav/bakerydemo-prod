@@ -60,6 +60,11 @@ if [ ! -d data/elasticsearch ]; then
   mkdir -p data/elasticsearch;
   sudo chmod -R 777 data/elasticsearch;
 fi
+
+if [ ! -d data/redis ]; then
+  mkdir -p data/redis;
+  sudo chmod -R 777 data/redis;
+fi
 echo >&2 "* data....is created"
 
 # Creating Media Structure
