@@ -1,2 +1,2 @@
 #https://www.elastic.co/guide/en/elasticsearch/reference/current/docker.html#docker-cli-run-prod-mode
-sysctl -w vm.max_map_count=262144
+sudo sysctl -w vm.max_map_count=262144
