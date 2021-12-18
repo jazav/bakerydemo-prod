@@ -18,7 +18,7 @@ if [ ! -d log/postgresql ]; then
   mkdir -p log/postgresql;
   sudo chmod -R 777 log/postgresql;
 fi
-echo >&2 "Log...is created"
+echo >&2 "log...is created"
 
 # Creating Data Structure
 if [ ! -d data ]; then
@@ -52,7 +52,7 @@ if [ ! -d data/elasticsearch ]; then
 fi
 
 
-echo >&2 "Data..is created"
+echo >&2 "data..is created"
 
 
 
@@ -66,4 +66,4 @@ if [ ! -d media/original_images ]; then
   mkdir -p media/original_images;
   sudo chmod -R 777 media/original_images;
 fi
-echo >&2 "Media.is created"
+echo >&2 "media.is created"
