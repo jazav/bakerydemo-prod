@@ -40,7 +40,21 @@ if [ ! -d data/uwsgi ]; then
   mkdir -p data/uwsgi;
   sudo chmod -R 777 data/uwsgi;
 fi
+
+if [ ! -d data/pgadmin ]; then
+  mkdir -p data/pgadmin;
+  sudo chmod -R 777 data/pgadmin;
+fi
+
+if [ ! -d data/elasticsearch ]; then
+  mkdir -p data/elasticsearch;
+  sudo chmod -R 777 data/elasticsearch;
+fi
+
+
 echo >&2 "Data..is created"
+
+
 
 # Creating Media Structure
 if [ ! -d media ]; then
