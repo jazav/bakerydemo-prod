@@ -24,6 +24,8 @@ services:
       - "${PGADMIN_PORT?err}:${PGADMIN_PORT?err}"
     expose:
       - "${PGADMIN_PORT?err}"
+    depends_on:
+      - postgresql
     tty: true
     deploy:
       replicas: 1
