@@ -80,7 +80,7 @@ services:
       ELASTICSEARCH_NODE_PORT_NUMBER: ${ELASTICSEARCH_NODE_PORT?err}
       BITNAMI_DEBUG: "false"
       ELASTICSEARCH_CLUSTER_NAME: ${APP_NAME?err}-elastic-cluster
-      ELASTICSEARCH_HEAP_SIZE: 1024m
+      ELASTICSEARCH_HEAP_SIZE: 512m
       bootstrap.memory_lock: "true"
 #      ES_JAVA_OPTS: "-Xms1024m -Xmx1024m -Des.enforce.bootstrap.checks=true"
       ES_JAVA_OPTS: "-Xms512m -Xmx512m"
@@ -97,9 +97,7 @@ services:
     cap_add:
       - IPC_LOCK
     healthcheck:
-#      test: [ "CMD", "curl","-s" ,"-f", "-u", "elasticsearch", "http://elasticsearch:${ELASTICSEARCH_PORT?err}/_cat/health" ]
       test: ["CMD-SHELL", "curl --silent --fail localhost:${ELASTICSEARCH_PORT?err}/_cluster/health || exit 1"]
-#      test: curl -u elastic:elastic -s -f elasticsearch:${ELASTICSEARCH_PORT?err}/_cat/health >/dev/null || exit 1
       interval: 20s
       timeout: 10s
       retries: 5
