@@ -77,17 +77,18 @@ services:
     restart: always
     environment:
       ELASTICSEARCH_PORT_NUMBER: ${ELASTICSEARCH_PORT?err}
+      ELASTICSEARCH_NODE_PORT_NUMBER: ${ELASTICSEARCH_NODE_PORT?err}
       BITNAMI_DEBUG: "false"
       ELASTICSEARCH_CLUSTER_NAME: ${APP_NAME?err}-elastic-cluster
       ELASTICSEARCH_HEAP_SIZE: 1024m
-      ES_JAVA_OPTS: "-Xms2g -Xmx2g -Des.enforce.bootstrap.checks=true"
-    #    ulimits:
-    #      memlock:
-    #        soft: -2
-    #        hard: -2
-    #    mem_limit: 2g
+      ES_JAVA_OPTS: "-Xms1024m -Xmx1024m -Des.enforce.bootstrap.checks=true"
+    ulimits:
+      memlock:
+        soft: -2
+        hard: -2
+#      mem_limit: 1g
     healthcheck:
-      test: [ "CMD", "curl","-s" ,"-f", "-u", "elasticsearch", "http://elasticsearch:9200/_cat/health" ]
+      test: [ "CMD", "curl","-s" ,"-f", "-u", "elasticsearch", "http://elasticsearch:${ELASTICSEARCH_PORT?err}/_cat/health" ]
       interval: 20s
       timeout: 10s
       retries: 5
