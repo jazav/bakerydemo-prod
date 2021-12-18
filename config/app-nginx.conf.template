@@ -254,6 +254,7 @@ server {
         resolver 127.0.0.1 valid=30s;
         proxy_pass http://pgadmin:${PGADMIN_PORT}/;
         proxy_redirect off;
+        port_in_redirect off;
     }
 
 # TO-DO: Using external authication
@@ -315,6 +316,7 @@ server {
         resolver 127.0.0.1 valid=30s;
         proxy_pass http://visualizer:${VISUALIZER_HOST_PORT}/;
         proxy_redirect off;
+        port_in_redirect off;
     }
 
     location / {
