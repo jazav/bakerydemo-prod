@@ -119,6 +119,7 @@ services:
 #      CACHE_URL is defined in docker-entrypoint.sh, it is using in settings/production.py
 #      CACHE_URL: redis://default:${REDIS_PASSWORD?err}@redis:6379
       REDIS_PORT_NUMBER: ${REDIS_PORT?err}
+      ELASTICSEARCH_PORT_NUMBER: ${ELASTICSEARCH_PORT?err}
       REDIS_PASSWORD_FILE: /run/secrets/redis-password
       ELASTICSEARCH_ENDPOINT: elasticsearch
   nginx:
