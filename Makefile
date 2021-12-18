@@ -22,10 +22,27 @@ stack_rm:
 stack_errors:
 	@ docker stack ps --no-trunc bakerydemo
 
+scale_django_0:
+	@ docker service scale bakerydemo_django=0
+
+scale_django_1:
+	@ docker service scale bakerydemo_django=1
+
+scale_nginx_0:
+	@ docker service scale bakerydemo_nginx=0
+
+scale_nginx_1:
+	@ docker service scale bakerydemo_nginx=1
+
+scale_postgresql_0:
+	@ docker service scale bakerydemo_postgresql=0
+
+scale_postgresql_1:
+	@ docker service scale bakerydemo_postgresql=1
+
 visualizer_run:
 #https://github.com/dockersamples/docker-swarm-visualizer
-	@ docker service create --name=viz --publish=8080:8080/tcp --constraint=node.role==manager
-	--mount=type=bind,src=/var/run/docker.sock,dst=/var/run/docker.sock alexellis2/visualizer-arm:latest
+	@ docker service create --name=viz --publish=8080:8080/tcp --constraint=node.role==manager --mount=type=bind,src=/var/run/docker.sock,dst=/var/run/docker.sock alexellis2/visualizer-arm:latest
 
 swarm_init:
 	@docker swarm init
