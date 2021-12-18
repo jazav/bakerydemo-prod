@@ -81,14 +81,25 @@ services:
       BITNAMI_DEBUG: "false"
       ELASTICSEARCH_CLUSTER_NAME: ${APP_NAME?err}-elastic-cluster
       ELASTICSEARCH_HEAP_SIZE: 1024m
-      ES_JAVA_OPTS: "-Xms1024m -Xmx1024m -Des.enforce.bootstrap.checks=true"
+      bootstrap.memory_lock: "true"
+#      ES_JAVA_OPTS: "-Xms1024m -Xmx1024m -Des.enforce.bootstrap.checks=true"
+      ES_JAVA_OPTS: "-Xms512m -Xmx512m"
+#        - xpack.monitoring.enabled=true
+#        - xpack.monitoring.elasticsearch.collection.enabled=true
     ulimits:
       memlock:
-        soft: -2
-        hard: -2
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
 #      mem_limit: 1g
+    cap_add:
+      - IPC_LOCK
     healthcheck:
-      test: [ "CMD", "curl","-s" ,"-f", "-u", "elasticsearch", "http://elasticsearch:${ELASTICSEARCH_PORT?err}/_cat/health" ]
+#      test: [ "CMD", "curl","-s" ,"-f", "-u", "elasticsearch", "http://elasticsearch:${ELASTICSEARCH_PORT?err}/_cat/health" ]
+      test: ["CMD-SHELL", "curl --silent --fail localhost:${ELASTICSEARCH_PORT?err}/_cluster/health || exit 1"]
+#      test: curl -u elastic:elastic -s -f elasticsearch:${ELASTICSEARCH_PORT?err}/_cat/health >/dev/null || exit 1
       interval: 20s
       timeout: 10s
       retries: 5
@@ -103,6 +114,11 @@ services:
           - "node.labels.purpose==database"
       restart_policy:
         condition: on-failure
+      labels:
+        co.elastic.metrics/module: "elasticsearch"
+        co.elastic.metrics/hosts: "http://elasticsearch:${ELASTICSEARCH_PORT?err}"
+        co.elastic.metrics/metricsets: "node_stats,node"
+        co.elastic.metrics/xpack.enabled: "true"
     volumes:
       # for vanilla
 #      - ./data/elasticsearch:/usr/share/elasticsearch/data
