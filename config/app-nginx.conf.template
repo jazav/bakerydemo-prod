@@ -255,6 +255,7 @@ server {
         proxy_pass http://pgadmin:${PGADMIN_PORT}/;
         proxy_redirect off;
         port_in_redirect off;
+        absolute_redirect off;
     }
 
 # TO-DO: Using external authication
@@ -315,8 +316,10 @@ server {
         # prevent Nginx from crashing if the upstream service doesn't start
         resolver 127.0.0.1 valid=30s;
         proxy_pass http://visualizer:${VISUALIZER_HOST_PORT}/;
+        proxy_redirect http://$remote_addr/swarmadmin:${VISUALIZER_HOST_PORT}/ http://$remote_addr/swarmadmin/;
         proxy_redirect off;
         port_in_redirect off;
+#        absolute_redirect off;
     }
 
     location / {
