@@ -18,8 +18,8 @@ timer="5"
 DATABASE_URL=postgres://$POSTGRES_USER:$(cat $DBUSER_PASSWORD_FILE)@postgresql:$POSTGRES_PORT/$POSTGRES_DB
 export DATABASE_URL
 
-#CACHE_URL=redis://default:$(cat $REDIS_PASSWORD_FILE)@redis:$REDIS_PORT_NUMBER
-#export CACHE_URL
+CACHE_URL=redis://default:$(cat $REDIS_PASSWORD_FILE)@redis:$REDIS_PORT_NUMBER
+export CACHE_URL
 
 until psql "$DATABASE_URL" -c '\l'; do
   echo >&2 " Postgres is unavailable - sleeping for $timer seconds"

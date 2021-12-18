@@ -122,7 +122,7 @@ services:
       - ./config/app-nginx.conf.template:/etc/nginx/templates/app-nginx.conf.template
       - ./secrets/swarm.htpasswd:/etc/nginx/conf.d/swarm.htpasswd
       - media-root:/code/${APP_NAME}/media/images
-      - web-root:/code/${APP_NAME}
+      - web-root:/code/${APP_NAME}/collect_static
       - ./log/nginx:/var/log/nginx/
     # we need it uncomment to unix sock only
     ##      - tmp:/tmp:ro

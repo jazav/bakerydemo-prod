@@ -24,6 +24,15 @@ services:
       - "${PGADMIN_PORT?err}:${PGADMIN_PORT?err}"
     expose:
       - "${PGADMIN_PORT?err}"
+    tty: true
+    deploy:
+      replicas: 1
+      placement:
+        max_replicas_per_node: 1
+        constraints:
+          - "node.labels.purpose==database"
+      restart_policy:
+        condition: on-failure
     volumes:
       - ./config/pgadmin/servers.json:/pgadmin4/servers.json
 #      - ./config/pgadmin/.pgpass:/var/lib/pgadmin/storage/pgadmin4_pgadmin.org/.pgpass
@@ -44,6 +53,15 @@ services:
       interval: 20s
       timeout: 10s
       retries: 10
+    tty: true
+    deploy:
+      replicas: 1
+      placement:
+        max_replicas_per_node: 1
+        constraints:
+          - "node.labels.purpose==web"
+      restart_policy:
+        condition: on-failure
     volumes:
       - ./data/redis:/bitnami/redis/data
     networks:
@@ -71,6 +89,15 @@ services:
       interval: 20s
       timeout: 10s
       retries: 5
+    tty: true
+    deploy:
+      replicas: 1
+      placement:
+        max_replicas_per_node: 1
+        constraints:
+          - "node.labels.purpose==database"
+      restart_policy:
+        condition: on-failure
     volumes:
       # for vanilla
 #      - ./data/elasticsearch:/usr/share/elasticsearch/data
@@ -94,6 +121,7 @@ services:
       PGADMIN_PORT: ${PGADMIN_PORT?err}
 volumes:
   data:
+    driver: local
 secrets:
   redis-password:
     file: secrets/redis_password.txt
