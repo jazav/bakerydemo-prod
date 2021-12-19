@@ -30,6 +30,10 @@ scale_django_0:
 scale_django_1:
 	@ docker service scale bakerydemo_django=1
 
+load:
+	@ docker-compose -f docker-compose.yml run django /venv/bin/python manage.py load_initial_data
+#	@ docker exec $(APP_NAME)_1 /venv/bin/python ./manage.py load_initial_data
+
 scale_nginx_0:
 	@ docker service scale bakerydemo_nginx=0
 
