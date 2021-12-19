@@ -4,10 +4,10 @@ services:
     image: dpage/pgadmin4:latest
     restart: unless-stopped
     environment:
-      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL?err}
-      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD?err}
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL?:err}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD?:err}
       PGADMIN_CONFIG_SERVER_MODE: 'True'
-      PGADMIN_LISTEN_PORT: ${PGADMIN_PORT?err}
+      PGADMIN_LISTEN_PORT: ${PGADMIN_PORT?:err}
       #PGADMIN_SERVER_JSON_FILE: servers.json
       # Application log level - one of:
       # CRITICAL 50, ERROR 40, WARNING 30, SQL 25, INFO 20, DEBUG 10, NOTSET 0
@@ -21,9 +21,9 @@ services:
     networks:
       - app_network
     ports:
-      - "${PGADMIN_PORT?err}:${PGADMIN_PORT?err}"
+      - "${PGADMIN_PORT?:err}:${PGADMIN_PORT?:err}"
     expose:
-      - "${PGADMIN_PORT?err}"
+      - "${PGADMIN_PORT?:err}"
     depends_on:
       - postgresql
     tty: true
@@ -49,7 +49,7 @@ services:
 #      ALLOW_EMPTY_PASSWORD: "yes"
       REDIS_PASSWORD_FILE: /run/secrets/redis-password
       REDIS_DISABLE_COMMANDS: FLUSHDB,FLUSHALL,CONFIG
-      REDIS_PORT_NUMBER: ${REDIS_PORT?err}
+      REDIS_PORT_NUMBER: ${REDIS_PORT?:err}
     healthcheck:
       test: [ "CMD", "redis-cli", "ping" ]
       interval: 20s
@@ -69,17 +69,17 @@ services:
     networks:
       - app_network
     expose:
-      - "${REDIS_PORT?err}"
+      - "${REDIS_PORT?:err}"
   elasticsearch:
     #image: elasticsearch:6.8.16
     #image: elasticsearch:7.14.0
     image: bitnami/elasticsearch:6
     restart: always
     environment:
-      ELASTICSEARCH_PORT_NUMBER: ${ELASTICSEARCH_PORT?err}
-      ELASTICSEARCH_NODE_PORT_NUMBER: ${ELASTICSEARCH_NODE_PORT?err}
+      ELASTICSEARCH_PORT_NUMBER: ${ELASTICSEARCH_PORT?:err}
+      ELASTICSEARCH_NODE_PORT_NUMBER: ${ELASTICSEARCH_NODE_PORT?:err}
       BITNAMI_DEBUG: "false"
-      ELASTICSEARCH_CLUSTER_NAME: ${APP_NAME?err}-elastic-cluster
+      ELASTICSEARCH_CLUSTER_NAME: ${APP_NAME?:err}-elastic-cluster
       ELASTICSEARCH_HEAP_SIZE: 512m
       bootstrap.memory_lock: "true"
 #      ES_JAVA_OPTS: "-Xms1024m -Xmx1024m -Des.enforce.bootstrap.checks=true"
@@ -97,7 +97,7 @@ services:
     cap_add:
       - IPC_LOCK
     healthcheck:
-      test: ["CMD-SHELL", "curl --silent --fail localhost:${ELASTICSEARCH_PORT?err}/_cluster/health || exit 1"]
+      test: ["CMD-SHELL", "curl --silent --fail localhost:${ELASTICSEARCH_PORT?:err}/_cluster/health || exit 1"]
       interval: 20s
       timeout: 10s
       retries: 5
@@ -112,7 +112,7 @@ services:
         condition: on-failure
       labels:
         co.elastic.metrics/module: "elasticsearch"
-        co.elastic.metrics/hosts: "http://elasticsearch:${ELASTICSEARCH_PORT?err}"
+        co.elastic.metrics/hosts: "http://elasticsearch:${ELASTICSEARCH_PORT?:err}"
         co.elastic.metrics/metricsets: "node_stats,node"
         co.elastic.metrics/xpack.enabled: "true"
     volumes:
@@ -123,20 +123,20 @@ services:
     networks:
       - app_network
     expose:
-      - "${ELASTICSEARCH_PORT?err}"
+      - "${ELASTICSEARCH_PORT?:err}"
   django:
     secrets:
       - redis-password
     environment:
 #      CACHE_URL is defined in docker-entrypoint.sh, it is using in settings/production.py
-#      CACHE_URL: redis://default:${REDIS_PASSWORD?err}@redis:6379
-      REDIS_PORT_NUMBER: ${REDIS_PORT?err}
-      ELASTICSEARCH_PORT_NUMBER: ${ELASTICSEARCH_PORT?err}
+#      CACHE_URL: redis://default:${REDIS_PASSWORD?:err}@redis:6379
+      REDIS_PORT_NUMBER: ${REDIS_PORT?:err}
+      ELASTICSEARCH_PORT_NUMBER: ${ELASTICSEARCH_PORT?:err}
       REDIS_PASSWORD_FILE: /run/secrets/redis-password
       ELASTICSEARCH_ENDPOINT: elasticsearch
   nginx:
     environment:
-      PGADMIN_PORT: ${PGADMIN_PORT?err}
+      PGADMIN_PORT: ${PGADMIN_PORT?:err}
 volumes:
   data:
     driver: local

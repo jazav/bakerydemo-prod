@@ -13,7 +13,7 @@ services:
     networks:
       - app_network
     ports:
-      - "${VISUALIZER_HOST_PORT?err}:${VISUALIZER_DOCKER_PORT?err}"
+      - "${VISUALIZER_HOST_PORT?:err}:${VISUALIZER_DOCKER_PORT?:err}"
     deploy:
       replicas: 1
       placement:
