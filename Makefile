@@ -37,7 +37,7 @@ load:
 set_load_on:
 	@ export DJANGO_LOAD_INITIAL_DATA=on
 
-set_load_on:
+set_load_off:
 	@ export DJANGO_LOAD_INITIAL_DATA=off
 
 scale_nginx_0:
