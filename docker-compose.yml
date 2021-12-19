@@ -54,7 +54,7 @@ services:
     networks:
       - app_network
     environment:
-      DJANGO_LOAD_INITIAL_DATA: ${DJANGO_LOAD_INITIAL_DATA:-off}
+#      DJANGO_LOAD_INITIAL_DATA: ${DJANGO_LOAD_INITIAL_DATA:-off}
       POSTGRES_USER: ${POSTGRES_USER?:err}
       DBUSER_PASSWORD_FILE: /run/secrets/dbuser-password
       POSTGRES_DB: ${POSTGRES_DB?:err}
