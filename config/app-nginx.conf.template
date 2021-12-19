@@ -237,8 +237,7 @@ server {
     location /pgadmin/ {
         proxy_set_header X-Script-Name /pgadmin;
         proxy_set_header Host $host;
-
-        # Send appropriate headers through
+        proxy_set_header X-Forwarded-Host $host;
         proxy_set_header X-Forwarded-Proto $scheme;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -253,6 +252,7 @@ server {
         # prevent Nginx from crashing if the upstream service doesn't start
         resolver 127.0.0.1 valid=30s;
         proxy_pass http://pgadmin:${PGADMIN_PORT}/;
+
         proxy_redirect off;
         port_in_redirect off;
         absolute_redirect off;
@@ -299,10 +299,7 @@ server {
     location /swarmadmin/ {
         proxy_set_header X-Script-Name /swarmadmin;
         proxy_set_header Host $host;
-
         proxy_set_header X-Forwarded-Host $host;
-
-        # Send appropriate headers through
         proxy_set_header X-Forwarded-Proto $scheme;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -316,14 +313,12 @@ server {
 #        set $proxyurl $scheme://$targetIP:$targetPort/;
 
         # prevent Nginx from crashing if the upstream service doesn't start
-        resolver 127.0.0.1 valid=30s;
-
-        port_in_redirect off;
+        resolver 127.0.0.1 valid=30s
         proxy_pass http://visualizer:${VISUALIZER_HOST_PORT}/;
-        proxy_redirect http://110-6216-1122.cc.spbu.ru/swarmadmin:${VISUALIZER_HOST_PORT}/ http://110-6216-1122.cc.spbu.ru/swarmadmin/;
-#        proxy_redirect off;
 
-#        absolute_redirect off;
+        proxy_redirect off;
+        port_in_redirect off;
+        absolute_redirect off;
     }
 
     location / {
