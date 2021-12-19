@@ -35,10 +35,10 @@ load:
 #	@ docker exec $(APP_NAME)_1 /venv/bin/python ./manage.py load_initial_data
 
 set_load_on:
-	@ sh export DJANGO_LOAD_INITIAL_DATA=on
+	@ export DJANGO_LOAD_INITIAL_DATA=on
 
 set_load_off:
-	@ sh export DJANGO_LOAD_INITIAL_DATA=off
+	@ export DJANGO_LOAD_INITIAL_DATA=off
 
 scale_nginx_0:
 	@ docker service scale bakerydemo_nginx=0
