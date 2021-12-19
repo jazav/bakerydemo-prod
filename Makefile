@@ -1,3 +1,5 @@
+SHELL := /bin/bash
+
 action:
 args = `arg="$(filter-out $@,$(MAKECMDGOALS))" && echo $${arg:-${1}}`
 
