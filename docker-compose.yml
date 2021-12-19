@@ -46,7 +46,7 @@ services:
       - dbuser-password
       - django-secret
     healthcheck:
-      test: "curl --fail --silent --write-out 'HTTP CODE : %{http_code}\n' --output /dev/null http://127.0.0.1:${DJANGO_DOCKER_PORT?:err}/"
+#      test: "curl --fail --silent --write-out 'HTTP CODE : %{http_code}\n' --output /dev/null http://127.0.0.1:${DJANGO_DOCKER_PORT?:err}/"
       interval: 20s
       timeout: 30s
       retries: 3
@@ -68,7 +68,7 @@ services:
     depends_on:
       - postgresql
     deploy:
-      replicas: 1
+      replicas: 0
       placement:
         max_replicas_per_node: 1
         constraints:
@@ -130,7 +130,7 @@ services:
     depends_on:
       - django
     deploy:
-      replicas: 1
+      replicas: 0
       placement:
         max_replicas_per_node: 1
         constraints:
