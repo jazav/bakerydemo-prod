@@ -75,3 +75,6 @@ git_clone:
 git_update:
 	@ git pull origin master
 
+shell:
+	@ docker exec -it 288e3d764b74 bash
+
