@@ -1,0 +1,1 @@
+export DJANGO_LOAD_INITIAL_DATA=off
