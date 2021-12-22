@@ -23,6 +23,13 @@ stack_ext_deploy:
 stack_rm:
 	@ docker stack rm bakerydemo
 
+ base_rm_all:
+	@ docker image rmi -f $(BASE_NAME) $(BASE_NAME):$(VERSION) nginx_base postgresql_base
+	@ docker volume prune --force
+
+base_rm_vol:
+	@ docker volume prune --force
+
 stack_errors:
 	@ docker stack ps --no-trunc bakerydemo
 
