@@ -69,7 +69,7 @@ services:
     depends_on:
       - postgresql
     deploy:
-      replicas: 0
+      replicas: 1
       placement:
         max_replicas_per_node: 1
         constraints:
@@ -131,7 +131,7 @@ services:
     depends_on:
       - django
     deploy:
-      replicas: 0
+      replicas: 1
       placement:
         max_replicas_per_node: 1
         constraints:
