@@ -134,6 +134,9 @@ services:
       ELASTICSEARCH_PORT_NUMBER: ${ELASTICSEARCH_PORT?:err}
       REDIS_PASSWORD_FILE: /run/secrets/redis-password
       ELASTICSEARCH_ENDPOINT: elasticsearch
+    depends_on:
+      - redis
+      - elasticsearch
   nginx:
     environment:
       PGADMIN_PORT: ${PGADMIN_PORT?:err}
