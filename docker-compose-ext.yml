@@ -54,7 +54,6 @@ services:
       TZ: ${TIME_ZONE}
     sysctls:
       net.core.somaxconn: "65535"
-      vm.overcommit_memory: "1"
     healthcheck:
       test: [ "CMD", "redis-cli", "ping" ]
       interval: 20s
@@ -92,8 +91,6 @@ services:
 #        - xpack.monitoring.enabled=true
 #        - xpack.monitoring.elasticsearch.collection.enabled=true
       TZ: ${TIME_ZONE}
-    sysctls:
-      vm.max_map_count: "262144"
     ulimits:
       memlock:
         soft: -1
