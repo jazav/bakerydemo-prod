@@ -198,7 +198,7 @@ server {
     access_log /var/log/nginx/access.log vcombined_fmt buffer=32k flush=30s if=$loggable;
     error_log /var/log/nginx/error.log crit;
 
-#    access_log /dev/stdout vcombined_fmt;
+#    access_log /dev/stdout vcombined_fmt if=$loggable;
 #    error_log /dev/stderr info;
 
     location /static/ {
@@ -215,12 +215,29 @@ server {
         alias /code/${APP_NAME}/media/;
     }
     # Error pages
-    error_page 500 502 503 504 /500.html;
-    location = /500.html {
+    error_page 500 502 503 504 /50x.html;
+    location = /50x.html {
         expires max;
         log_not_found off;
         access_log off;
-        root /code/${APP_NAME}/collect_static/;
+        root /usr/share/nginx/html;
+        internal;
+#        root /code/${APP_NAME}/collect_static/;
+    }
+
+    error_page 404 /404.html;
+    location = /404.html {
+        expires max;
+        log_not_found off;
+        access_log off;
+        root /usr/share/nginx/html;
+        internal;
+    }
+
+    # 404 if we meet somethig like that (fight the bots)
+    location ~ /(phpmyadmin|boaform|jndi|getuser|pmd|ldap|security.txt|shell|redlion|azenv)|.(php|jaws|cgi|env)(?:$|/) {
+        deny all;
+        return 404;
     }
 
     #    location ~* .(ogg|ogv|svg|svgz|eot|otf|woff|mp4|ttf|css|rss|atom|js|jpg|jpeg|gif|png|ico|zip|tgz|gz|rar|bz2|doc|xls|exe|ppt|tar|mid|midi|wav|bmp|rtf)$ {
@@ -229,34 +246,49 @@ server {
     #        access_log off;
     #        alias /code/${APP_NAME}/collect_static/;
     #    }
+
 #   protect admin locations
-#    location ~ ^/(admin|django-admin)/{
-#            limit_req zone=req_limit_per_ip burst=5 nodelay;
-#        }
+    location ~ ^/(admin|django-admin)/{
+        limit_req zone=req_limit_per_ip burst=5 nodelay;
+#   Send all other requests to the uWSGI application server using uwsgi wire protocol
+#   these params must be equal uWsgi: harakiri = 30
+        proxy_read_timeout 30s;
+        proxy_send_timeout 30s;
 
-    location /pgadmin/ {
-        proxy_set_header X-Script-Name /pgadmin;
-        proxy_set_header Host $host;
-        proxy_set_header X-Forwarded-Host $host;
-        proxy_set_header X-Forwarded-Proto $scheme;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Port ${NGINX_HOST_PORT};
-
-# TO_DO: It doesn't work for some reason
-#        set $targetIP pgadmin;
-#        set $targetPort ${PGADMIN_PORT};
-#        set $proxyurl $scheme://$targetIP:$targetPort/;
-#        proxy_pass $proxyurl;
-
-        # prevent Nginx from crashing if the upstream service doesn't start
         resolver 127.0.0.1 valid=30s;
-        proxy_pass http://pgadmin:${PGADMIN_PORT}/;
+        include     /etc/nginx/uwsgi_params;
+        uwsgi_pass uwsgi://uwsgi_server;
 
-        proxy_redirect off;
-        port_in_redirect off;
-        absolute_redirect off;
-    }
+        # https://docs.nginx.com/nginx/admin-guide/web-server/app-gateway-uwsgi-django/?_ga=2.142520368.381084465.1628541854-1471180224.1625218973
+        uwsgi_param Host $host;
+        uwsgi_param X-Real-IP $remote_addr;
+        uwsgi_param X-Forwarded-For $proxy_add_x_forwarded_for;
+        uwsgi_param X-Forwarded-Proto $http_x_forwarded_proto;
+        }
+
+#    location /pgadmin/ {
+#        proxy_set_header X-Script-Name /pgadmin;
+#        proxy_set_header Host $host;
+#        proxy_set_header X-Forwarded-Host $host;
+#        proxy_set_header X-Forwarded-Proto $scheme;
+#        proxy_set_header X-Real-IP $remote_addr;
+#        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+#        proxy_set_header X-Forwarded-Port ${NGINX_HOST_PORT};
+#
+## TO_DO: It doesn't work for some reason
+##        set $targetIP pgadmin;
+##        set $targetPort ${PGADMIN_PORT};
+##        set $proxyurl $scheme://$targetIP:$targetPort/;
+##        proxy_pass $proxyurl;
+#
+#        # prevent Nginx from crashing if the upstream service doesn't start
+#        resolver 127.0.0.1 valid=30s;
+#        proxy_pass http://pgadmin:${PGADMIN_PORT}/;
+#
+#        proxy_redirect off;
+#        port_in_redirect off;
+#        absolute_redirect off;
+#    }
 
 # TO-DO: Using external authication
 
@@ -296,30 +328,26 @@ server {
 #        proxy_set_header Content-Length "";
 #        proxy_pass http://your-php-script/file.php;
 #    }
-    location /swarmadmin/ {
-        proxy_set_header X-Script-Name /swarmadmin;
-        proxy_set_header Host $host;
-        proxy_set_header X-Forwarded-Host $host;
-        proxy_set_header X-Forwarded-Proto $scheme;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Port ${NGINX_HOST_PORT};
-
-        auth_basic "Restricted";
-        auth_basic_user_file /etc/nginx/conf.d/swarm.htpasswd;
-
-#        set $targetIP visualizer;
-#        set $targetPort ${VISUALIZER_HOST_PORT};
-#        set $proxyurl $scheme://$targetIP:$targetPort/;
-
-        # prevent Nginx from crashing if the upstream service doesn't start
-        resolver 127.0.0.1 valid=30s;
-        proxy_pass http://visualizer:${VISUALIZER_HOST_PORT}/;
-
-        proxy_redirect off;
-        port_in_redirect off;
-        absolute_redirect off;
-    }
+#    location /swarmadmin/ {
+#        proxy_set_header X-Script-Name /swarmadmin;
+#        proxy_set_header Host $host;
+#        proxy_set_header X-Forwarded-Host $host;
+#        proxy_set_header X-Forwarded-Proto $scheme;
+#        proxy_set_header X-Real-IP $remote_addr;
+#        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+#        proxy_set_header X-Forwarded-Port ${NGINX_HOST_PORT};
+#
+#        auth_basic "Restricted";
+#        auth_basic_user_file /etc/nginx/conf.d/swarm.htpasswd;
+#
+#        # prevent Nginx from crashing if the upstream service doesn't start
+#        resolver 127.0.0.1 valid=30s;
+#        proxy_pass http://visualizer:${VISUALIZER_HOST_PORT}/;
+#
+#        proxy_redirect off;
+#        port_in_redirect off;
+#        absolute_redirect off;
+#    }
 
     location / {
         # Setup var defaults
@@ -369,9 +397,11 @@ server {
         #            break;
         #        }
         # Send all other requests to the uWSGI application server using uwsgi wire protocol
-        # theae params must be equal uWsgi: harakiri = 30
+        # these params must be equal uWsgi: harakiri = 30
         proxy_read_timeout 30s;
         proxy_send_timeout 30s;
+
+        resolver 127.0.0.1 valid=30s;
         include     /etc/nginx/uwsgi_params;
         uwsgi_pass uwsgi://uwsgi_server;
 

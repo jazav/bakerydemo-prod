@@ -49,12 +49,13 @@ services:
       test: "curl --fail --silent --write-out 'HTTP CODE : %{http_code}\n' --output /dev/null http://127.0.0.1:${DJANGO_DOCKER_PORT?:err}/"
       interval: 20s
       timeout: 30s
-      retries: 3
+      retries: 5
       start_period: 60s
     networks:
       - app_network
     environment:
       DJANGO_DEBUG: ${DJANGO_DEBUG:-off}
+      DJANGO_LOG_LEVEL:  ${DJANGO_LOG_LEVEL:-WARNING}
       DJANGO_LOAD_INITIAL_DATA: ${DJANGO_LOAD_INITIAL_DATA:-off}
       POSTGRES_USER: ${POSTGRES_USER?:err}
       DBUSER_PASSWORD_FILE: /run/secrets/dbuser-password
@@ -122,6 +123,7 @@ services:
         max-size: "5m"
     volumes:
       - ./config/app-nginx.conf.template:/etc/nginx/templates/app-nginx.conf.template
+      - ./config/html/404.html:/usr/share/nginx/html/404.html
       - ./secrets/swarm.htpasswd:/etc/nginx/conf.d/swarm.htpasswd
       - media-root:/code/${APP_NAME}/media/images
       - web-root:/code/${APP_NAME}/collect_static
