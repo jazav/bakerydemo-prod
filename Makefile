@@ -80,7 +80,7 @@ git_clone:
 	@ sudo chmod -R 777 bakerydemo_prod
 
 git_update:
-	@ git pull origin master
+	@ git pull origin main
 
 shell:
 	@ docker exec -it 288e3d764b74 bash

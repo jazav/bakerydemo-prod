@@ -235,7 +235,7 @@ server {
     }
 
     # 404 if we meet somethig like that (fight the bots)
-    location ~ /(phpmyadmin|boaform|jndi|getuser|pmd|ldap|security.txt|shell|redlion|azenv)|.(php|jaws|cgi|env)(?:$|/) {
+        location ~ /(phpmyadmin|boaform|jndi|getuser|pmd|ldap|security.txt|shell|redlion|azenv|HNAP1|Telerik)|.(php|jaws|cgi|env)(?:$|/) {
         deny all;
         return 404;
     }

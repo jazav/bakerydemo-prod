@@ -1,3 +1,39 @@
+#!/bin/sh
+
+# Function to create directory
+make_dir()
+{
+  # Directory to create
+  DIR=$1
+  if [ ! -d "$DIR" ]; then
+    mkdir -p "$DIR";
+    sudo chmod -R 777 "$DIR";
+    echo " + made $DIR"
+  else
+    echo " . $DIR already exists"
+  fi
+}
+
+echo >&2 "Start of script..."
+#make_dir tmp
+#make_dir tmp/postgresql
+#make_dir tmp/postgresql/data
+#make_dir tmp/postgresql/logs
+#make_dir tmp/pgadmin
+#make_dir tmp/pgadmin/data
+#make_dir tmp/pgadmin/logs
+#make_dir tmp/scrapyd
+#make_dir tmp/scrapyd/data
+#make_dir tmp/scrapyd/dbs
+#make_dir tmp/scrapyd/eggs
+#make_dir tmp/scrapyd/items
+#make_dir tmp/scrapyd/logs
+#make_dir tmp/scrspiderkeeperapyd
+#make_dir tmp/scrspiderkeeperapyd/data
+echo >&2 "End of script..."
+
+
+
 # Creating Log Structure
 if [ ! -d log ]; then
   mkdir -p log;
