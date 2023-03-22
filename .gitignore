@@ -9,9 +9,6 @@ old.env
 /logs
 /data
 .~*
-common/CACHE
-bakerydemo/settings/local.py
-bakerydemodb
 __pycache__
 .vagrant/
 /.vagrant/
